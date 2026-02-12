@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type TutorialId = 'git-basics' | 'portfolio' | 'firebase-portfolio';
+export type TutorialId = 'git-basics' | 'portfolio';
 
 export interface File {
   id: string;
