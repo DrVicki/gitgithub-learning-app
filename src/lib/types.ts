@@ -1,3 +1,7 @@
+import type { ReactNode } from 'react';
+
+export type TutorialId = 'git-basics' | 'portfolio';
+
 export interface File {
   id: string;
   name: string;
@@ -26,6 +30,7 @@ export interface TerminalLine {
 }
 
 export interface TutorialState {
+  tutorialId: TutorialId;
   currentStep: number;
   repoInitialized: boolean;
   fileSystem: Directory;

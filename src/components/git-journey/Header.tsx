@@ -1,28 +1,60 @@
 "use client";
 
-import { GitGraph, RotateCcw } from "lucide-react";
+import { GitGraph, RotateCcw, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTutorial } from "./TutorialProvider";
 import { Progress } from "@/components/ui/progress";
 import { AIGitExplainer } from "./AIGitExplainer";
-import { tutorialSteps } from "@/lib/tutorial-steps";
+import { tutorials, type TutorialId } from "@/lib/tutorials";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
-  const { resetTutorial, state } = useTutorial();
-  const progress = (state.currentStep / (tutorialSteps.length - 1)) * 100;
+  const { resetTutorial, state, selectTutorial } = useTutorial();
+  const activeTutorial = tutorials[state.tutorialId];
+  const progress = (state.currentStep / (activeTutorial.steps.length - 1)) * 100;
 
   return (
     <header className="flex items-center justify-between p-4 border-b bg-card">
       <div className="flex items-center gap-3">
         <GitGraph className="h-8 w-8 text-primary" />
-        <h1 className="text-2xl font-headline font-bold text-foreground">
-          GitJourney by Dr. Vicki
-        </h1>
+        <div className="flex flex-col">
+          <h1 className="text-xl font-headline font-bold text-foreground leading-tight">
+            GitJourney by Dr. Vicki
+          </h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-1 text-sm font-normal -ml-3 h-auto py-0 px-3 text-muted-foreground hover:text-foreground">
+                {activeTutorial.name}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Choose a Tutorial</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {Object.entries(tutorials).map(([id, { name }]) => (
+                <DropdownMenuItem
+                  key={id}
+                  onClick={() => selectTutorial(id as TutorialId)}
+                  disabled={id === state.tutorialId}
+                >
+                  {name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       <div className="flex-1 max-w-sm flex items-center gap-4">
         <Progress value={progress} className="h-2" />
         <span className="text-sm font-medium text-muted-foreground w-20 text-right">
-          Step {state.currentStep + 1}/{tutorialSteps.length}
+          Step {state.currentStep + 1}/{activeTutorial.steps.length}
         </span>
       </div>
       <div className="flex items-center gap-2">

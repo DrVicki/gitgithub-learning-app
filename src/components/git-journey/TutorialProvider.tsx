@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
-import type { TutorialState, TutorialStep, TerminalLine } from '@/lib/types';
-import { tutorialSteps } from '@/lib/tutorial-steps';
+import type { TutorialState, TutorialStep, TerminalLine, TutorialId } from '@/lib/types';
+import { tutorials } from '@/lib/tutorials';
 import { nanoid } from 'nanoid';
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,9 +11,11 @@ type TutorialAction =
   | { type: 'RESET' }
   | { type: 'PROCESS_COMMAND'; payload: string }
   | { type: 'CREATE_FILE'; payload: { name: string, content: string } }
-  | { type: 'MODIFY_FILE'; payload: { name: string, content: string } };
+  | { type: 'MODIFY_FILE'; payload: { name: string, content: string } }
+  | { type: 'SELECT_TUTORIAL'; payload: TutorialId };
 
 const initialState: TutorialState = {
+  tutorialId: 'git-basics',
   currentStep: 0,
   repoInitialized: false,
   fileSystem: { id: 'root', name: 'gitjourney-project', files: [], dirs: [] },
@@ -161,7 +163,7 @@ Branch 'main' set up to track remote branch 'main' from 'origin'.`;
     
     case 'MODIFY_FILE': {
       const fileToModify = findFile(state, action.payload.name);
-      if (!fileToModify || fileToModify.status === 'modified') return state;
+      if (!fileToModify) return state;
 
       const newFileSystem = {
         ...state.fileSystem,
@@ -176,7 +178,18 @@ Branch 'main' set up to track remote branch 'main' from 'origin'.`;
     }
 
     case 'RESET':
-      return { ...initialState, terminalHistory: [{id: 0, type: 'output', content: 'Tutorial reset. Welcome back!'}] };
+      return { 
+        ...initialState, 
+        tutorialId: state.tutorialId,
+        terminalHistory: [{id: 0, type: 'output', content: 'Tutorial reset. Welcome back!'}] 
+      };
+    
+    case 'SELECT_TUTORIAL':
+      return {
+        ...initialState,
+        tutorialId: action.payload,
+        terminalHistory: [{ id: 0, type: 'output', content: `Switched to "${tutorials[action.payload].name}" tutorial. Welcome!` }],
+      };
     
     default:
       return state;
@@ -189,6 +202,7 @@ type TutorialContextType = {
   processCommand: (command: string) => void;
   currentStepData: TutorialStep;
   resetTutorial: () => void;
+  selectTutorial: (tutorialId: TutorialId) => void;
 };
 
 const TutorialContext = createContext<TutorialContextType | undefined>(undefined);
@@ -197,44 +211,43 @@ export const TutorialProvider = ({ children }: { children: React.ReactNode }) =>
   const [state, dispatch] = useReducer(reducer, initialState);
   const { toast } = useToast();
 
+  const activeTutorialSteps = useMemo(() => tutorials[state.tutorialId].steps, [state.tutorialId]);
+
   const processCommand = (command: string) => {
     dispatch({ type: 'PROCESS_COMMAND', payload: command });
   };
   
-  const currentStepData = useMemo(() => tutorialSteps[state.currentStep], [state.currentStep]);
+  const currentStepData = useMemo(() => activeTutorialSteps[state.currentStep], [state.currentStep, activeTutorialSteps]);
 
   const checkStepCompletion = useCallback(() => {
-    if (currentStepData.isCompleted(state) && state.currentStep < tutorialSteps.length - 1) {
+    if (currentStepData.isCompleted(state) && state.currentStep < activeTutorialSteps.length - 1) {
       toast({
         title: "Step Complete!",
         description: `You've completed: "${currentStepData.title}"`,
       });
       dispatch({ type: 'SET_STEP', payload: state.currentStep + 1 });
     }
-  }, [state, currentStepData, toast]);
+  }, [state, currentStepData, toast, activeTutorialSteps.length]);
 
   useEffect(() => {
     checkStepCompletion();
   }, [state, checkStepCompletion]);
 
   useEffect(() => {
-    const savedStep = localStorage.getItem('gitjourney_step');
-    if (savedStep && parseInt(savedStep, 10) > 0) {
-      // This is complex, would need to reconstruct state up to that step.
-      // For now, we always start at 0 but could implement this later.
-    }
+    // For simplicity, we don't persist state across reloads when multiple tutorials exist.
+    // The state is complex to reconstruct.
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem('gitjourney_step', state.currentStep.toString());
-  }, [state.currentStep]);
 
   const resetTutorial = () => {
     dispatch({ type: 'RESET' });
   };
 
+  const selectTutorial = (tutorialId: TutorialId) => {
+    dispatch({ type: 'SELECT_TUTORIAL', payload: tutorialId });
+  };
+
   return (
-    <TutorialContext.Provider value={{ state, dispatch, processCommand, currentStepData, resetTutorial }}>
+    <TutorialContext.Provider value={{ state, dispatch, processCommand, currentStepData, resetTutorial, selectTutorial }}>
       {children}
     </TutorialContext.Provider>
   );
