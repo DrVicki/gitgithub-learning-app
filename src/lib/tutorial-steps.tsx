@@ -116,24 +116,104 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 5,
-    title: "First Commit Created!",
+    title: "Modifying a File",
     description: (
       <div className="space-y-4">
         <p>
-          Congratulations! You've made your first commit. Look at the "Commit History" panel. You can see your new commit there, with its unique ID and message.
+          Congratulations! You've made your first commit. Look at the "Commit History" panel. You can see your new commit there.
         </p>
         <p>
-          Also, notice <Code>README.md</Code> is back to its normal color. It's now "unmodified" because its current state matches the last snapshot Git saved.
+          Now that you've saved a version of your project, let's see what happens when you modify a file. Click the button below to update the content of your <Code>README.md</Code> file.
+        </p>
+      </div>
+    ),
+    uiAction: {
+      label: 'Modify README.md',
+      actionType: 'MODIFY_FILE',
+      payload: { name: 'README.md', content: '# My Awesome GitJourney Project' },
+    },
+    isCompleted: (state: TutorialState) => state.fileSystem.files.some(f => f.name === 'README.md' && f.status === 'modified'),
+  },
+  {
+    id: 6,
+    title: "Viewing Modified Files",
+    description: (
+      <div className="space-y-4">
+        <p>
+          You've updated the file. Notice in the "File System" view, <Code>README.md</Code> is now marked with an 'M' for "modified".
+        </p>
+        <p>
+          This tells you that the file has changed since your last commit. Run <Code>git status</Code> to see how Git reports this change.
+        </p>
+        <div className="bg-muted p-2 rounded-md">
+          <pre className="font-code text-sm">git status</pre>
+        </div>
+      </div>
+    ),
+    commandToProceed: /^git status$/,
+    isCompleted: (state: TutorialState) => {
+        const lastCommand = state.terminalHistory.at(-2);
+        return !!(lastCommand?.type === 'command' && lastCommand.content === 'git status' && state.currentStep === 6);
+    },
+  },
+  {
+    id: 7,
+    title: "Staging the Modification",
+    description: (
+      <div className="space-y-4">
+        <p>
+          The status shows "Changes not staged for commit". Before you can save this new version, you must stage the modified file, just like you did when it was new.
+        </p>
+        <p>
+          Use the <Code>git add</Code> command to stage your changes.
+        </p>
+        <div className="bg-muted p-2 rounded-md">
+          <pre className="font-code text-sm">git add README.md</pre>
+        </div>
+      </div>
+    ),
+    commandToProceed: /^git add (README.md|\.)$/,
+    isCompleted: (state: TutorialState) => state.fileSystem.files.some(f => f.name === 'README.md' && f.status === 'staged'),
+  },
+  {
+    id: 8,
+    title: "Committing the Modification",
+    description: (
+      <div className="space-y-4">
+        <p>
+          Perfect, the file is staged. Now you can commit this change. It's a good practice to write commit messages that clearly describe the change you made.
+        </p>
+        <p>
+          Let's commit this change with a more descriptive message.
+        </p>
+        <div className="bg-muted p-2 rounded-md">
+          <pre className="font-code text-sm">git commit -m "Update README title"</pre>
+        </div>
+      </div>
+    ),
+    commandToProceed: /^git commit -m ".*"$/,
+    isCompleted: (state: TutorialState) => state.commits.length > 1,
+  },
+  {
+    id: 9,
+    title: "Reviewing History",
+    description: (
+       <div className="space-y-4">
+        <p>
+          Excellent! You've made another commit. Check the "Commit History" panel. You can now see both of your commits, creating a timeline of your project's history.
+        </p>
+        <p>
+          This is the core workflow of Git: **modify, add, commit**. You'll repeat this cycle many times as you develop a project.
         </p>
         <p>
           Now, let's connect our local repository to a remote repository on GitHub to share and back up our work.
         </p>
       </div>
     ),
-    isCompleted: (state: TutorialState) => state.commits.length > 0,
+    isCompleted: (state: TutorialState) => state.commits.length > 1,
   },
   {
-    id: 6,
+    id: 10,
     title: "Connecting to GitHub",
     description: (
       <div className="space-y-4">
@@ -158,7 +238,7 @@ export const tutorialSteps: TutorialStep[] = [
     isCompleted: (state: TutorialState) => state.remoteUrl !== null,
   },
   {
-    id: 7,
+    id: 11,
     title: "Pushing to Remote",
     description: (
       <div className="space-y-4">
@@ -177,15 +257,15 @@ export const tutorialSteps: TutorialStep[] = [
     isCompleted: (state: TutorialState) => state.terminalHistory.some(l => l.type === 'command' && l.content === 'git push -u origin main'),
   },
   {
-    id: 8,
+    id: 12,
     title: 'Congratulations!',
     description: (
       <div className="space-y-4">
         <p>You've completed the basic Git workflow! You have:</p>
         <ul className="list-disc list-inside space-y-2">
           <li>Initialized a local Git repository.</li>
-          <li>Created a file and checked its status.</li>
-          <li>Staged and committed your changes.</li>
+          <li>Created and modified a file.</li>
+          <li>Staged and committed your changes multiple times.</li>
           <li>Connected your local repo to a remote on GitHub.</li>
           <li>Pushed your commits to the remote repository.</li>
         </ul>

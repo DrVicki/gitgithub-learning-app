@@ -10,7 +10,8 @@ type TutorialAction =
   | { type: 'SET_STEP'; payload: number }
   | { type: 'RESET' }
   | { type: 'PROCESS_COMMAND'; payload: string }
-  | { type: 'CREATE_FILE'; payload: { name: string, content: string } };
+  | { type: 'CREATE_FILE'; payload: { name: string, content: string } }
+  | { type: 'MODIFY_FILE'; payload: { name: string, content: string } };
 
 const initialState: TutorialState = {
   currentStep: 0,
@@ -49,45 +50,74 @@ const reducer = (state: TutorialState, action: TutorialAction): TutorialState =>
             const staged = newState.fileSystem.files.filter(f => f.status === 'staged');
             const modified = newState.fileSystem.files.filter(f => f.status === 'modified');
             const untracked = newState.fileSystem.files.filter(f => f.status === 'untracked');
-            let statusOutput = 'On branch main\n\nNo commits yet\n\n';
+            let statusOutput = 'On branch main\n\n';
+
+            if (newState.commits.length === 0) {
+              statusOutput += 'No commits yet\n\n';
+            }
+
+            let hasChanges = false;
             if (staged.length > 0) {
+               hasChanges = true;
                statusOutput += 'Changes to be committed:\n';
                staged.forEach(f => statusOutput += `\tnew file:   ${f.name}\n`);
+               statusOutput += '\n';
+            }
+            if (modified.length > 0) {
+              hasChanges = true;
+              statusOutput += 'Changes not staged for commit:\n';
+              modified.forEach(f => statusOutput += `\tmodified:   ${f.name}\n`);
+              statusOutput += '\n';
             }
             if (untracked.length > 0) {
-               statusOutput += '\nUntracked files:\n';
+              hasChanges = true;
+               statusOutput += 'Untracked files:\n';
                untracked.forEach(f => statusOutput += `\t${f.name}\n`);
+               statusOutput += '\n';
+            }
+            if (!hasChanges) {
+              statusOutput += 'nothing to commit, working tree clean';
             }
             output = statusOutput;
          }
       } else if (/^git add (.*)$/.test(command)) {
         const match = command.match(/^git add (.*)$/);
         const fileToAdd = match ? match[1] : '';
-        if (fileToAdd === '.' || findFile(state, fileToAdd)) {
+        const filesToStage = fileToAdd === '.'
+            ? newState.fileSystem.files.filter(f => f.status === 'untracked' || f.status === 'modified')
+            : newState.fileSystem.files.filter(f => f.name === fileToAdd && (f.status === 'untracked' || f.status === 'modified'));
+
+        if (filesToStage.length > 0) {
+            const fileIdsToStage = filesToStage.map(f => f.id);
             newState.fileSystem = {
                 ...newState.fileSystem,
-                files: newState.fileSystem.files.map(f => f.status === 'untracked' || f.status === 'modified' ? { ...f, status: 'staged' } : f)
+                files: newState.fileSystem.files.map(f => fileIdsToStage.includes(f.id) ? { ...f, status: 'staged' } : f)
             };
             output = '';
         } else {
-            output = `fatal: pathspec '${fileToAdd}' did not match any files`;
+            if (!findFile(state, fileToAdd) && fileToAdd !== '.') {
+              output = `fatal: pathspec '${fileToAdd}' did not match any files`;
+            } else {
+              output = ''; // No files to add, but command is valid or file already staged.
+            }
         }
       } else if (/^git commit -m "(.*)"$/.test(command)) {
         const stagedFiles = newState.fileSystem.files.filter(f => f.status === 'staged');
         if (stagedFiles.length === 0) {
-            output = 'On branch main\nNo commits yet\nnothing to commit, working tree clean';
+            output = 'On branch main\n' + (newState.commits.length === 0 ? 'No commits yet\n' : '') + 'nothing to commit, working tree clean';
         } else {
             const match = command.match(/^git commit -m "(.*)"$/);
             const message = match ? match[1] : 'Commit';
             const id = nanoid(40);
             const newCommit = { id, shortId: id.substring(0, 7), message, timestamp: Date.now() };
+            const isRoot = state.commits.length === 0;
+
             newState.commits = [newCommit, ...newState.commits];
             newState.fileSystem = {
                 ...newState.fileSystem,
                 files: newState.fileSystem.files.map(f => f.status === 'staged' ? { ...f, status: 'unmodified' } : f)
             };
-            output = `[main (root-commit) ${newCommit.shortId}] ${message}\n 1 file changed, 1 insertion(+)
- create mode 100644 README.md`;
+            output = `[main${isRoot ? ' (root-commit)' : ''} ${newCommit.shortId}] ${message}\n ${stagedFiles.length} file changed.`;
         }
       } else if (/^git remote add origin (.*)$/.test(command)) {
         const match = command.match(/^git remote add origin (.*)$/);
@@ -127,6 +157,22 @@ Branch 'main' set up to track remote branch 'main' from 'origin'.`;
         };
 
         return { ...state, fileSystem: newFileSystem };
+    }
+    
+    case 'MODIFY_FILE': {
+      const fileToModify = findFile(state, action.payload.name);
+      if (!fileToModify || fileToModify.status === 'modified') return state;
+
+      const newFileSystem = {
+        ...state.fileSystem,
+        files: state.fileSystem.files.map(f =>
+          f.name === action.payload.name
+            ? { ...f, content: action.payload.content, status: 'modified' }
+            : f
+        ),
+      };
+
+      return { ...state, fileSystem: newFileSystem };
     }
 
     case 'RESET':
