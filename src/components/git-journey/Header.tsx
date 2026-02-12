@@ -1,22 +1,14 @@
 "use client";
 
-import { GitGraph, RotateCcw, ChevronDown } from "lucide-react";
+import { GitGraph, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTutorial } from "./TutorialProvider";
 import { Progress } from "@/components/ui/progress";
 import { AIGitExplainer } from "./AIGitExplainer";
-import { tutorials, type TutorialId } from "@/lib/tutorials";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { tutorials } from "@/lib/tutorials";
 
 export function Header() {
-  const { resetTutorial, state, selectTutorial } = useTutorial();
+  const { resetTutorial, state } = useTutorial();
   const activeTutorial = tutorials[state.tutorialId];
   const progress = (state.currentStep / (activeTutorial.steps.length - 1)) * 100;
 
@@ -28,27 +20,7 @@ export function Header() {
           <h1 className="text-xl font-headline font-bold text-foreground leading-tight">
             GitJourney by Dr. Vicki
           </h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-1 text-sm font-normal -ml-3 h-auto py-0 px-3 text-muted-foreground hover:text-foreground">
-                {activeTutorial.name}
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Choose a Tutorial</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {Object.entries(tutorials).map(([id, { name }]) => (
-                <DropdownMenuItem
-                  key={id}
-                  onClick={() => selectTutorial(id as TutorialId)}
-                  disabled={id === state.tutorialId}
-                >
-                  {name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <p className="text-sm text-muted-foreground">{activeTutorial.name}</p>
         </div>
       </div>
       <div className="flex-1 max-w-sm flex items-center gap-4">

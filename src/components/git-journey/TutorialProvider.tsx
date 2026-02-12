@@ -11,8 +11,7 @@ type TutorialAction =
   | { type: 'RESET' }
   | { type: 'PROCESS_COMMAND'; payload: string }
   | { type: 'CREATE_FILE'; payload: { name: string, content: string } }
-  | { type: 'MODIFY_FILE'; payload: { name: string, content: string } }
-  | { type: 'SELECT_TUTORIAL'; payload: TutorialId };
+  | { type: 'MODIFY_FILE'; payload: { name: string, content: string } };
 
 const initialState: TutorialState = {
   tutorialId: 'git-basics',
@@ -184,13 +183,6 @@ Branch 'main' set up to track remote branch 'main' from 'origin'.`;
         terminalHistory: [{id: 0, type: 'output', content: 'Tutorial reset. Welcome back!'}] 
       };
     
-    case 'SELECT_TUTORIAL':
-      return {
-        ...initialState,
-        tutorialId: action.payload,
-        terminalHistory: [{ id: 0, type: 'output', content: `Switched to "${tutorials[action.payload].name}" tutorial. Welcome!` }],
-      };
-    
     default:
       return state;
   }
@@ -202,7 +194,6 @@ type TutorialContextType = {
   processCommand: (command: string) => void;
   currentStepData: TutorialStep;
   resetTutorial: () => void;
-  selectTutorial: (tutorialId: TutorialId) => void;
 };
 
 const TutorialContext = createContext<TutorialContextType | undefined>(undefined);
@@ -242,12 +233,8 @@ export const TutorialProvider = ({ children }: { children: React.ReactNode }) =>
     dispatch({ type: 'RESET' });
   };
 
-  const selectTutorial = (tutorialId: TutorialId) => {
-    dispatch({ type: 'SELECT_TUTORIAL', payload: tutorialId });
-  };
-
   return (
-    <TutorialContext.Provider value={{ state, dispatch, processCommand, currentStepData, resetTutorial, selectTutorial }}>
+    <TutorialContext.Provider value={{ state, dispatch, processCommand, currentStepData, resetTutorial }}>
       {children}
     </TutorialContext.Provider>
   );
