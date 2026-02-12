@@ -1,5 +1,6 @@
 import { tutorialSteps as gitBasicsSteps } from './tutorial-steps';
 import { portfolioTutorialSteps } from './portfolio-tutorial-steps';
+import { firebasePortfolioTutorialSteps } from './firebase-portfolio-tutorial-steps';
 import type { TutorialStep, TutorialId } from './types';
 
 type Tutorial = {
@@ -15,5 +16,9 @@ export const tutorials: Record<TutorialId, Tutorial> = {
   'portfolio': {
     name: 'Portfolio on GitHub Pages',
     steps: portfolioTutorialSteps,
+  },
+  'firebase-portfolio': {
+    name: 'Portfolio with Firebase Hosting',
+    steps: firebasePortfolioTutorialSteps,
   },
 };
