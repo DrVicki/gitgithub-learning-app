@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'GitJourney',
+  title: 'GitJourney by Dr. Vicki',
   description: 'An interactive guide to mastering Git and GitHub.',
 };
 

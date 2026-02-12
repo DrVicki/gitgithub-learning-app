@@ -16,7 +16,7 @@ export function Header() {
       <div className="flex items-center gap-3">
         <GitGraph className="h-8 w-8 text-primary" />
         <h1 className="text-2xl font-headline font-bold text-foreground">
-          GitJourney
+          GitJourney by Dr. Vicki
         </h1>
       </div>
       <div className="flex-1 max-w-sm flex items-center gap-4">
