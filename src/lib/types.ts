@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type TutorialId = 'git-basics';
+export type TutorialId = 'git-basics' | 'portfolio-github';
 
 export interface File {
   id: string;
