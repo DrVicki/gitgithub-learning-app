@@ -1,3 +1,3 @@
 # GitJourney by Dr. Vicki
 
-![](/home/user/studio/GitHub-Learning-Tutorial.png)
+![](https://github.com/DrVicki/gitgithub-learning-app/blob/main/GitHub-Learning-Tutorial.png)
