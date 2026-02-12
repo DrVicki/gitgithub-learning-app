@@ -6,23 +6,11 @@ import { useTutorial } from "./TutorialProvider";
 import { Progress } from "@/components/ui/progress";
 import { AIGitExplainer } from "./AIGitExplainer";
 import { tutorials } from "@/lib/tutorials";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { TutorialId } from "@/lib/types";
 
 export function Header() {
-  const { resetTutorial, state, dispatch } = useTutorial();
+  const { resetTutorial, state } = useTutorial();
   const activeTutorial = tutorials[state.tutorialId];
   const progress = (state.currentStep / (activeTutorial.steps.length - 1)) * 100;
-
-  const handleTutorialChange = (tutorialId: TutorialId) => {
-    dispatch({ type: 'SWITCH_TUTORIAL', payload: tutorialId });
-  };
 
   return (
     <header className="flex items-center justify-between p-4 border-b bg-card">
@@ -32,18 +20,7 @@ export function Header() {
           <h1 className="text-xl font-headline font-bold text-foreground leading-tight">
             GitJourney by Dr. Vicki
           </h1>
-          <Select onValueChange={handleTutorialChange} value={state.tutorialId}>
-            <SelectTrigger className="w-[280px] h-7 text-xs">
-                <SelectValue placeholder="Select a tutorial" />
-            </SelectTrigger>
-            <SelectContent>
-                {Object.entries(tutorials).map(([id, tutorial]) => (
-                    <SelectItem key={id} value={id}>
-                        {tutorial.name}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+          <p className="text-sm text-muted-foreground">{activeTutorial.name}</p>
         </div>
       </div>
       <div className="flex-1 max-w-sm flex items-center gap-4">

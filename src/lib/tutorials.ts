@@ -1,5 +1,4 @@
 import { tutorialSteps as gitBasicsSteps } from './tutorial-steps';
-import { portfolioTutorialSteps } from './portfolio-tutorial-steps';
 import type { TutorialStep, TutorialId } from './types';
 
 type Tutorial = {
@@ -12,8 +11,4 @@ export const tutorials: Record<TutorialId, Tutorial> = {
     name: 'Git Basics: The Core Workflow',
     steps: gitBasicsSteps,
   },
-  'portfolio-github': {
-    name: 'Portfolio with GitHub Pages',
-    steps: portfolioTutorialSteps,
-  }
 };

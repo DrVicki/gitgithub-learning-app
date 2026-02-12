@@ -11,8 +11,7 @@ type TutorialAction =
   | { type: 'RESET' }
   | { type: 'PROCESS_COMMAND'; payload: string }
   | { type: 'CREATE_FILE'; payload: { name: string, content: string } }
-  | { type: 'MODIFY_FILE'; payload: { name: string, content: string } }
-  | { type: 'SWITCH_TUTORIAL'; payload: TutorialId };
+  | { type: 'MODIFY_FILE'; payload: { name: string, content: string } };
 
 const initialState: TutorialState = {
   tutorialId: 'git-basics',
@@ -278,13 +277,6 @@ Branch 'main' set up to track remote branch 'main' from 'origin'.`;
         tutorialId: state.tutorialId,
         terminalHistory: [{id: 0, type: 'output', content: 'Tutorial reset. Welcome back!'}] 
       };
-    
-    case 'SWITCH_TUTORIAL':
-      return {
-        ...initialState,
-        tutorialId: action.payload,
-        terminalHistory: [{ id: 0, type: 'output', content: `Switched to ${tutorials[action.payload].name}. Welcome!`}]
-      }
     
     default:
       return state;
