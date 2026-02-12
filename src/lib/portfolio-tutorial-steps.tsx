@@ -111,16 +111,19 @@ export const portfolioTutorialSteps: TutorialStep[] = [
     description: (
       <div className="space-y-4">
         <p>
-          Your code is committed locally. To publish it, you need a remote repository on GitHub.
+          Your code is committed locally. To publish it, you need a remote repository on GitHub where you'll host your portfolio.
         </p>
         <p className="flex items-center gap-2">
-          Normally, you would now go to GitHub.com <Github className="inline h-4 w-4" />, create a new, empty public repository (without a README), and name it something like "my-portfolio".
+            Go to your account on <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">GitHub.com</a> <Github className="inline h-4 w-4" /> and create a **new, empty, public repository**. For a user site on GitHub Pages, the repository name must be <Code>your-username.github.io</Code>, where you replace `your-username` with your actual GitHub username.
         </p>
         <p>
-          GitHub will provide a URL. We'll use a demo URL for this tutorial. Link your local repo to the remote one with this command:
+          After creating the repository, GitHub will show you a URL. Copy the HTTPS URL.
+        </p>
+        <p>
+          Now, use the <Code>git remote add</Code> command to link your local repository to your new GitHub repository. Replace the placeholder URL below with your own.
         </p>
         <div className="bg-muted p-2 rounded-md">
-          <pre className="font-code text-sm">git remote add origin https://github.com/git-journey/portfolio-demo.git</pre>
+          <pre className="font-code text-sm">git remote add origin &lt;your-github-repo-url&gt;</pre>
         </div>
       </div>
     ),
@@ -155,13 +158,16 @@ export const portfolioTutorialSteps: TutorialStep[] = [
           Your code is on GitHub! The final step is to enable GitHub Pages.
         </p>
         <p>
-          In your real repository on GitHub.com, you would go to <Code>Settings &gt; Pages</Code>. Under "Branch", select <Code>main</Code> and click "Save".
+          In your repository on GitHub.com, go to <Code>Settings &gt; Pages</Code>. Under "Build and deployment", for the "Source", select <Code>Deploy from a branch</Code>.
         </p>
         <p>
-          After a minute or two, your website will be live at a URL like <Code>https://your-username.github.io/my-portfolio/</Code>.
+          Then, under the Branch dropdown, select <Code>main</Code> and the <Code>/(root)</Code> folder, and click "Save".
         </p>
         <p>
-          Congratulations! You've built and deployed a website using Git and GitHub Pages.
+          After a minute or two, your website will be live at <Code>https://your-username.github.io</Code>!
+        </p>
+        <p>
+          Congratulations! You've built and deployed a personal portfolio website using Git and GitHub Pages.
         </p>
       </div>
     ),

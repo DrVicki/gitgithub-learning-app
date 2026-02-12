@@ -221,16 +221,16 @@ export const tutorialSteps: TutorialStep[] = [
           So far, all our work is on our local machine. To collaborate or back up your code, you need to "push" it to a remote service like GitHub.
         </p>
         <p className="flex items-center gap-2">
-          First, you would go to GitHub.com <Github className="inline h-4 w-4" /> and create a new, empty repository (don't initialize it with a README).
+          First, go to your account on <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">GitHub.com</a> <Github className="inline h-4 w-4" /> and create a new, empty repository. Do not initialize it with a README, .gitignore, or license file.
         </p>
         <p>
-          Once created, GitHub gives you a URL for your new repository. It looks something like <Code>https://github.com/your-username/your-repo.git</Code>.
+          After creating the repository, GitHub will show you a URL for it. Copy the HTTPS URL (it should end with <Code>.git</Code>).
         </p>
         <p>
-          We use the <Code>git remote add</Code> command to link our local repo to that URL. Let's simulate this by adding a remote named "origin":
+          We use the <Code>git remote add</Code> command to link our local repo to that URL. Let's add a remote named "origin" using the URL you just copied. Replace the placeholder URL in the command below.
         </p>
         <div className="bg-muted p-2 rounded-md">
-          <pre className="font-code text-sm">git remote add origin https://github.com/git-journey/demo.git</pre>
+          <pre className="font-code text-sm">git remote add origin &lt;your-github-repo-url&gt;</pre>
         </div>
       </div>
     ),
