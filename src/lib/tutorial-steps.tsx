@@ -32,25 +32,21 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 1,
-    title: "Repository Initialized",
+    title: "Creating a File",
     description: (
       <div className="space-y-4">
         <p>
-          Great! You've just created a new Git repository. A hidden directory named <Code>.git</Code> has been created in your project folder. This is where Git stores all the metadata and history for your project.
+          Great! You've just created a new Git repository. A hidden directory named <Code>.git</Code> has been created, and Git is now tracking this project.
         </p>
         <p>
-          Notice the <GitGraph className="inline-block h-4 w-4 text-primary" /> icon appeared in the file visualizer? That indicates this is now a Git repository.
+          Next, let's create our first file. We'll use the <Code>touch</Code> command, which creates a new, empty file. Let's create a file named <Code>README.md</Code>.
         </p>
-        <p>
-          Next, let's create a file. You can do this by clicking the "Create File" button in the File System panel. Let's create a file named <Code>README.md</Code>.
-        </p>
+        <div className="bg-muted p-2 rounded-md">
+          <pre className="font-code text-sm">touch README.md</pre>
+        </div>
       </div>
     ),
-    uiAction: {
-      label: 'Create File',
-      actionType: 'CREATE_FILE',
-      payload: { name: 'README.md', content: '# My Project' },
-    },
+    commandToProceed: /^touch README.md$/,
     isCompleted: (state: TutorialState) => state.fileSystem.files.some(f => f.name === 'README.md'),
   },
   {
@@ -70,7 +66,7 @@ export const tutorialSteps: TutorialStep[] = [
       </div>
     ),
     commandToProceed: /^git status$/,
-    isCompleted: (state: TutorialState) => state.terminalHistory.some(l => l.type === 'command' && l.content === 'git status'),
+    isCompleted: (state: TutorialState) => state.terminalHistory.some(l => l.type === 'command' && l.content === 'git status' && state.currentStep === 2),
   },
   {
     id: 3,
@@ -136,14 +132,46 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 6,
-    title: "Viewing Modified Files",
+    title: "Creating a Directory",
+    description: (
+       <div className="space-y-4">
+        <p>
+          Now, let's create a directory to organize our code. Use the <Code>mkdir</Code> command to create a directory named <Code>src</Code>.
+        </p>
+        <div className="bg-muted p-2 rounded-md">
+          <pre className="font-code text-sm">mkdir src</pre>
+        </div>
+      </div>
+    ),
+    commandToProceed: /^mkdir src$/,
+    isCompleted: (state: TutorialState) => state.fileSystem.dirs.some(d => d.name === 'src'),
+  },
+  {
+    id: 7,
+    title: "Creating a File in a Directory",
+    description: (
+       <div className="space-y-4">
+        <p>
+          Great, you've created a <Code>src</Code> directory. Now let's create a new file inside it using the <Code>touch</Code> command again.
+        </p>
+        <div className="bg-muted p-2 rounded-md">
+          <pre className="font-code text-sm">touch src/app.js</pre>
+        </div>
+      </div>
+    ),
+    commandToProceed: /^touch src\/app.js$/,
+    isCompleted: (state: TutorialState) => state.fileSystem.dirs.some(d => d.name === 'src' && d.files.some(f => f.name === 'app.js')),
+  },
+  {
+    id: 8,
+    title: "Viewing Full Status",
     description: (
       <div className="space-y-4">
         <p>
-          You've updated the file. Notice in the "File System" view, <Code>README.md</Code> is now marked with an 'M' for "modified".
+          You now have a modified file (<Code>README.md</Code>) and a new untracked file (<Code>src/app.js</Code>).
         </p>
         <p>
-          This tells you that the file has changed since your last commit. Run <Code>git status</Code> to see how Git reports this change.
+          Run <Code>git status</Code> again to see how Git tracks all of these different changes.
         </p>
         <div className="bg-muted p-2 rounded-md">
           <pre className="font-code text-sm">git status</pre>
@@ -153,41 +181,39 @@ export const tutorialSteps: TutorialStep[] = [
     commandToProceed: /^git status$/,
     isCompleted: (state: TutorialState) => {
         const lastCommand = state.terminalHistory.at(-2);
-        return !!(lastCommand?.type === 'command' && lastCommand.content === 'git status' && state.currentStep === 6);
+        return !!(lastCommand?.type === 'command' && lastCommand.content === 'git status' && state.currentStep === 8);
     },
   },
   {
-    id: 7,
-    title: "Staging the Modification",
+    id: 9,
+    title: "Staging All Changes",
     description: (
       <div className="space-y-4">
         <p>
-          The status shows "Changes not staged for commit". Before you can save this new version, you must stage the modified file, just like you did when it was new.
-        </p>
-        <p>
-          Use the <Code>git add</Code> command to stage your changes.
+          Instead of adding files one by one, you can stage all changes in the current directory and subdirectories by using a period (<Code>.</Code>) with <Code>git add</Code>. This is a very common shortcut.
         </p>
         <div className="bg-muted p-2 rounded-md">
-          <pre className="font-code text-sm">git add README.md</pre>
+          <pre className="font-code text-sm">git add .</pre>
         </div>
       </div>
     ),
-    commandToProceed: /^git add (README.md|\.)$/,
-    isCompleted: (state: TutorialState) => state.fileSystem.files.some(f => f.name === 'README.md' && f.status === 'staged'),
+    commandToProceed: /^git add \.$/,
+    isCompleted: (state: TutorialState) => {
+      const readme = state.fileSystem.files.find(f => f.name === 'README.md');
+      const appJs = state.fileSystem.dirs.find(d => d.name === 'src')?.files.find(f => f.name === 'app.js');
+      return readme?.status === 'staged' && appJs?.status === 'staged';
+    },
   },
   {
-    id: 8,
-    title: "Committing the Modification",
+    id: 10,
+    title: "Committing Multiple Changes",
     description: (
       <div className="space-y-4">
         <p>
-          Perfect, the file is staged. Now you can commit this change. It's a good practice to write commit messages that clearly describe the change you made.
-        </p>
-        <p>
-          Let's commit this change with a more descriptive message.
+          Perfect, both files are staged. Now you can commit this set of changes. Write a commit message that summarizes the work you did.
         </p>
         <div className="bg-muted p-2 rounded-md">
-          <pre className="font-code text-sm">git commit -m "Update README title"</pre>
+          <pre className="font-code text-sm">git commit -m "Update README and add app structure"</pre>
         </div>
       </div>
     ),
@@ -195,30 +221,12 @@ export const tutorialSteps: TutorialStep[] = [
     isCompleted: (state: TutorialState) => state.commits.length > 1,
   },
   {
-    id: 9,
-    title: "Reviewing History",
-    description: (
-       <div className="space-y-4">
-        <p>
-          Excellent! You've made another commit. Check the "Commit History" panel. You can now see both of your commits, creating a timeline of your project's history.
-        </p>
-        <p>
-          This is the core workflow of Git: **modify, add, commit**. You'll repeat this cycle many times as you develop a project.
-        </p>
-        <p>
-          Now, let's connect our local repository to a remote repository on GitHub to share and back up our work.
-        </p>
-      </div>
-    ),
-    isCompleted: (state: TutorialState) => state.commits.length > 1,
-  },
-  {
-    id: 10,
+    id: 11,
     title: "Connecting to GitHub",
     description: (
       <div className="space-y-4">
         <p>
-          So far, all our work is on our local machine. To collaborate or back up your code, you need to "push" it to a remote service like GitHub.
+          You now have a solid history of your project locally. To collaborate or back up your code, you need to "push" it to a remote service like GitHub.
         </p>
         <p className="flex items-center gap-2">
           First, go to your account on <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">GitHub.com</a> <Github className="inline h-4 w-4" /> and create a new, empty repository. Do not initialize it with a README, .gitignore, or license file.
@@ -238,7 +246,7 @@ export const tutorialSteps: TutorialStep[] = [
     isCompleted: (state: TutorialState) => state.remoteUrl !== null,
   },
   {
-    id: 11,
+    id: 12,
     title: "Pushing to Remote",
     description: (
       <div className="space-y-4">
@@ -257,14 +265,14 @@ export const tutorialSteps: TutorialStep[] = [
     isCompleted: (state: TutorialState) => state.terminalHistory.some(l => l.type === 'command' && l.content === 'git push -u origin main'),
   },
   {
-    id: 12,
+    id: 13,
     title: 'Congratulations!',
     description: (
       <div className="space-y-4">
         <p>You've completed the basic Git workflow! You have:</p>
         <ul className="list-disc list-inside space-y-2">
           <li>Initialized a local Git repository.</li>
-          <li>Created and modified a file.</li>
+          <li>Created directories and files using the terminal.</li>
           <li>Staged and committed your changes multiple times.</li>
           <li>Connected your local repo to a remote on GitHub.</li>
           <li>Pushed your commits to the remote repository.</li>

@@ -3,7 +3,7 @@
 import { useTutorial } from "./TutorialProvider";
 import { File as FileIcon, Folder, GitGraph } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { File } from "@/lib/types";
+import type { File, Directory } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
 const FileStatusBadge = ({ status }: { status: File["status"] }) => {
@@ -69,6 +69,25 @@ const FileItem = ({ file }: { file: File }) => {
   );
 };
 
+const FolderItem = ({ dir }: { dir: Directory }) => {
+  return (
+    <div>
+      <div className="flex items-center gap-2 p-1.5 rounded">
+        <Folder className="h-5 w-5 text-foreground" />
+        <span className="font-code text-sm">{dir.name}</span>
+      </div>
+      <div className="pl-6 space-y-1">
+        {dir.dirs.map((subDir) => (
+          <FolderItem key={subDir.id} dir={subDir} />
+        ))}
+        {dir.files.map((file) => (
+          <FileItem key={file.id} file={file} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export function FileSystemVisualizer() {
   const { state, dispatch, currentStepData } = useTutorial();
   const { fileSystem, repoInitialized } = state;
@@ -82,6 +101,9 @@ export function FileSystemVisualizer() {
     }
   };
 
+  const isEmpty =
+    fileSystem.files.length === 0 && fileSystem.dirs.length === 0;
+
   return (
     <div className="bg-muted/50 p-4 rounded-lg h-full overflow-y-auto">
       <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-muted-foreground">
@@ -92,15 +114,20 @@ export function FileSystemVisualizer() {
         )}
       </div>
 
-      <div className="pl-4 space-y-1">
+      <div className="space-y-1">
+        {fileSystem.dirs.map((dir) => (
+          <FolderItem key={dir.id} dir={dir} />
+        ))}
         {fileSystem.files.map((file) => (
           <FileItem key={file.id} file={file} />
         ))}
-        {fileSystem.files.length === 0 && (
-           <p className="text-sm text-muted-foreground italic">No files yet.</p>
+        {isEmpty && (
+          <p className="text-sm text-muted-foreground italic pl-4">
+            No files or directories yet.
+          </p>
         )}
       </div>
-      
+
       {currentStepData.uiAction && (
         <div className="mt-4">
           <Button onClick={handleUiAction} size="sm" className="w-full">
